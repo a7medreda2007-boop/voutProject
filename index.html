@@ -54,7 +54,6 @@
             margin-bottom: 30px;
         }
 
-        /* Form Elements */
         .form-group {
             margin-bottom: 20px;
         }
@@ -106,7 +105,6 @@
             background-color: #FECACA;
         }
 
-        /* Buttons */
         .btn {
             width: 100%;
             padding: 14px;
@@ -138,7 +136,6 @@
             background-color: #C7D2FE;
         }
 
-        /* View Toggle */
         .view-section {
             display: none;
             animation: fadeIn 0.5s ease;
@@ -153,7 +150,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Voting Styles */
         .vote-option {
             background-color: #F9FAFB;
             border: 2px solid var(--border-color);
@@ -173,7 +169,6 @@
             background-color: #F3F4F6;
         }
 
-        /* Results Styles */
         .result-item {
             margin-bottom: 20px;
         }
@@ -213,7 +208,6 @@
 <body>
 
     <div class="container">
-        <!-- 1. Create Poll Section -->
         <div id="createView" class="view-section active">
             <h1>إنشاء استطلاع رأي</h1>
             <p class="subtitle">قم بصياغة سؤالك وأضف الخيارات (من 2 إلى 10 خيارات)</p>
@@ -239,24 +233,18 @@
             <button id="createPollBtn" class="btn btn-primary">نشر الاستطلاع</button>
         </div>
 
-        <!-- 2. Vote Section -->
         <div id="voteView" class="view-section">
             <h2 id="voteQuestionTitle">السؤال يظهر هنا</h2>
             <p class="subtitle">اختر إجابة واحدة لتدلي بصوتك</p>
             
-            <div id="voteOptionsContainer">
-                <!-- سيتم حقن الخيارات هنا بواسطة الجافاسكريبت -->
-            </div>
+            <div id="voteOptionsContainer"></div>
         </div>
 
-        <!-- 3. Results Section -->
         <div id="resultsView" class="view-section">
             <h2>نتائج الاستطلاع</h2>
             <h3 id="resultsQuestionTitle" style="text-align: center; margin-bottom: 20px; color: var(--primary);">السؤال يظهر هنا</h3>
             
-            <div id="resultsContainer">
-                <!-- سيتم حقن النتائج هنا بواسطة الجافاسكريبت -->
-            </div>
+            <div id="resultsContainer"></div>
 
             <div class="share-link">
                 ✅ تم تسجيل تصويتك بنجاح. شكراً لمشاركتك!
@@ -267,41 +255,34 @@
     </div>
 
     <script>
-        // DOM Elements
-        const optionsContainer = document.getElementById('optionsContainer');
-        const addOptionBtn = document.getElementById('addOptionBtn');
-        const createPollBtn = document.getElementById('createPollBtn');
-        
-        // Views
-        const createView = document.getElementById('createView');
-        const voteView = document.getElementById('voteView');
-        const resultsView = document.getElementById('resultsView');
+        let optionsContainer = document.querySelector('#optionsContainer');
+        let addOptionBtn = document.querySelector('#addOptionBtn');
+        let createPollBtn = document.querySelector('#createPollBtn');
+        let createView = document.querySelector('#createView');
+        let voteView = document.querySelector('#voteView');
+        let resultsView = document.querySelector('#resultsView');
 
-        // State Data
         let currentPoll = {
             question: '',
-            options: [] // Array of objects { text: 'Option', votes: 0 }
+            options: []
         };
 
-        // --- 1. Create Poll Logic ---
-        
-        // Add new option input (Max 10)
         addOptionBtn.addEventListener('click', () => {
-            const currentOptions = document.querySelectorAll('.poll-option-input').length;
+            let currentOptions = document.querySelectorAll('.poll-option-input').length;
             if (currentOptions >= 10) {
                 alert('الحد الأقصى هو 10 خيارات فقط');
                 return;
             }
 
-            const wrapper = document.createElement('div');
+            let wrapper = document.createElement('div');
             wrapper.className = 'option-input-wrapper';
             
-            const input = document.createElement('input');
+            let input = document.createElement('input');
             input.type = 'text';
             input.className = 'poll-option-input';
             input.placeholder = `الخيار رقم ${currentOptions + 1}`;
             
-            const removeBtn = document.createElement('button');
+            let removeBtn = document.createElement('button');
             removeBtn.className = 'remove-btn';
             removeBtn.innerHTML = 'X';
             removeBtn.onclick = function() {
@@ -313,10 +294,9 @@
             optionsContainer.appendChild(wrapper);
         });
 
-        // Create the poll
         createPollBtn.addEventListener('click', () => {
-            const question = document.getElementById('pollQuestion').value.trim();
-            const optionInputs = document.querySelectorAll('.poll-option-input');
+            let question = document.querySelector('#pollQuestion').value.trim();
+            let optionInputs = document.querySelectorAll('.poll-option-input');
             
             if (!question) {
                 alert('برجاء كتابة سؤال الاستطلاع');
@@ -335,63 +315,50 @@
                 return;
             }
 
-            // Save state
             currentPoll.question = question;
             currentPoll.options = optionsArray;
             
-            // Switch to vote view
             renderVoteView();
         });
 
-        // --- 2. Vote Logic ---
-        
         function renderVoteView() {
             createView.classList.remove('active');
             voteView.classList.add('active');
             
-            document.getElementById('voteQuestionTitle').innerText = currentPoll.question;
-            const container = document.getElementById('voteOptionsContainer');
-            container.innerHTML = ''; // clear
+            document.querySelector('#voteQuestionTitle').innerText = currentPoll.question;
+            let container = document.querySelector('#voteOptionsContainer');
+            container.innerHTML = '';
 
             currentPoll.options.forEach((opt, index) => {
-                const div = document.createElement('div');
+                let div = document.createElement('div');
                 div.className = 'vote-option';
                 div.innerHTML = `<span>${opt.text}</span> <span style="color:var(--border-color)">○</span>`;
-                
                 div.onclick = () => submitVote(index);
                 container.appendChild(div);
             });
         }
 
         function submitVote(selectedIndex) {
-            // Increment vote count
             currentPoll.options[selectedIndex].votes += 1;
-            
-            // Switch to results view
             renderResultsView();
         }
 
-        // --- 3. Results Logic ---
-        
         function renderResultsView() {
             voteView.classList.remove('active');
             resultsView.classList.add('active');
             
-            document.getElementById('resultsQuestionTitle').innerText = currentPoll.question;
-            const container = document.getElementById('resultsContainer');
+            document.querySelector('#resultsQuestionTitle').innerText = currentPoll.question;
+            let container = document.querySelector('#resultsContainer');
             container.innerHTML = '';
 
-            // Calculate total votes
             let totalVotes = 0;
             currentPoll.options.forEach(opt => totalVotes += opt.votes);
 
-            // Render bars
             currentPoll.options.forEach(opt => {
                 let percentage = totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
                 
-                const resultItem = document.createElement('div');
+                let resultItem = document.createElement('div');
                 resultItem.className = 'result-item';
-                
                 resultItem.innerHTML = `
                     <div class="result-header">
                         <span>${opt.text}</span>
@@ -403,19 +370,16 @@
                 `;
                 container.appendChild(resultItem);
 
-                // Animate progress bar slightly after render
                 setTimeout(() => {
                     resultItem.querySelector('.progress-bar-fill').style.width = percentage + '%';
                 }, 100);
             });
         }
 
-        // Reset App for demo purposes
         function resetApp() {
             currentPoll = { question: '', options: [] };
-            document.getElementById('pollQuestion').value = '';
+            document.querySelector('#pollQuestion').value = '';
             
-            // Reset options inputs to just 2
             optionsContainer.innerHTML = `
                 <div class="option-input-wrapper"><input type="text" class="poll-option-input" placeholder="الخيار الأول"></div>
                 <div class="option-input-wrapper"><input type="text" class="poll-option-input" placeholder="الخيار الثاني"></div>
