@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق استطلاعات الرأي | Poll App</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --border-color: #E5E7EB;
+            --success: #10B981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .remove-btn {
+            background-color: #FEE2E2;
+            color: #EF4444;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .remove-btn:hover {
+            background-color: #FECACA;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #E0E7FF;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #C7D2FE;
+        }
+
+        /* View Toggle */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Voting Styles */
+        .vote-option {
+            background-color: #F9FAFB;
+            border: 2px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vote-option:hover {
+            border-color: var(--primary);
+            background-color: #F3F4F6;
+        }
+
+        /* Results Styles */
+        .result-item {
+            margin-bottom: 20px;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            background-color: var(--border-color);
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 1s ease-in-out;
+        }
+        
+        .share-link {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: #D1FAE5;
+            color: #065F46;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 1. Create Poll Section -->
+        <div id="createView" class="view-section active">
+            <h1>إنشاء استطلاع رأي</h1>
+            <p class="subtitle">قم بصياغة سؤالك وأضف الخيارات (من 2 إلى 10 خيارات)</p>
+            
+            <div class="form-group">
+                <label for="pollQuestion">السؤال الأساسي:</label>
+                <input type="text" id="pollQuestion" placeholder="مثال: ما هي لغة البرمجة المفضلة لك؟">
+            </div>
+
+            <div class="form-group">
+                <label>الخيارات:</label>
+                <div id="optionsContainer" class="options-container">
+                    <div class="option-input-wrapper">
+                        <input type="text" class="poll-option-input" placeholder="الخيار الأول">
+                    </div>
+                    <div class="option-input-wrapper">
+                        <input type="text" class="poll-option-input" placeholder="الخيار الثاني">
+                    </div>
+                </div>
+            </div>
+
+            <button id="addOptionBtn" class="btn btn-secondary">+ إضافة خيار جديد</button>
+            <button id="createPollBtn" class="btn btn-primary">نشر الاستطلاع</button>
+        </div>
+
+        <!-- 2. Vote Section -->
+        <div id="voteView" class="view-section">
+            <h2 id="voteQuestionTitle">السؤال يظهر هنا</h2>
+            <p class="subtitle">اختر إجابة واحدة لتدلي بصوتك</p>
+            
+            <div id="voteOptionsContainer">
+                <!-- سيتم حقن الخيارات هنا بواسطة الجافاسكريبت -->
+            </div>
+        </div>
+
+        <!-- 3. Results Section -->
+        <div id="resultsView" class="view-section">
+            <h2>نتائج الاستطلاع</h2>
+            <h3 id="resultsQuestionTitle" style="text-align: center; margin-bottom: 20px; color: var(--primary);">السؤال يظهر هنا</h3>
+            
+            <div id="resultsContainer">
+                <!-- سيتم حقن النتائج هنا بواسطة الجافاسكريبت -->
+            </div>
+
+            <div class="share-link">
+                ✅ تم تسجيل تصويتك بنجاح. شكراً لمشاركتك!
+            </div>
+            
+            <button onclick="resetApp()" class="btn btn-secondary" style="margin-top: 30px;">إنشاء استطلاع جديد</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const optionsContainer = document.getElementById('optionsContainer');
+        const addOptionBtn = document.getElementById('addOptionBtn');
+        const createPollBtn = document.getElementById('createPollBtn');
+        
+        // Views
+        const createView = document.getElementById('createView');
+        const voteView = document.getElementById('voteView');
+        const resultsView = document.getElementById('resultsView');
+
+        // State Data
+        let currentPoll = {
+            question: '',
+            options: [] // Array of objects { text: 'Option', votes: 0 }
+        };
+
+        // --- 1. Create Poll Logic ---
+        
+        // Add new option input (Max 10)
+        addOptionBtn.addEventListener('click', () => {
+            const currentOptions = document.querySelectorAll('.poll-option-input').length;
+            if (currentOptions >= 10) {
+                alert('الحد الأقصى هو 10 خيارات فقط');
+                return;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'option-input-wrapper';
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'poll-option-input';
+            input.placeholder = `الخيار رقم ${currentOptions + 1}`;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.innerHTML = 'X';
+            removeBtn.onclick = function() {
+                wrapper.remove();
+            };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(removeBtn);
+            optionsContainer.appendChild(wrapper);
+        });
+
+        // Create the poll
+        createPollBtn.addEventListener('click', () => {
+            const question = document.getElementById('pollQuestion').value.trim();
+            const optionInputs = document.querySelectorAll('.poll-option-input');
+            
+            if (!question) {
+                alert('برجاء كتابة سؤال الاستطلاع');
+                return;
+            }
+
+            let optionsArray = [];
+            optionInputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    optionsArray.push({ text: input.value.trim(), votes: 0 });
+                }
+            });
+
+            if (optionsArray.length < 2) {
+                alert('يجب إدخال خيارين على الأقل');
+                return;
+            }
+
+            // Save state
+            currentPoll.question = question;
+            currentPoll.options = optionsArray;
+            
+            // Switch to vote view
+            renderVoteView();
+        });
+
+        // --- 2. Vote Logic ---
+        
+        function renderVoteView() {
+            createView.classList.remove('active');
+            voteView.classList.add('active');
+            
+            document.getElementById('voteQuestionTitle').innerText = currentPoll.question;
+            const container = document.getElementById('voteOptionsContainer');
+            container.innerHTML = ''; // clear
+
+            currentPoll.options.forEach((opt, index) => {
+                const div = document.createElement('div');
+                div.className = 'vote-option';
+                div.innerHTML = `<span>${opt.text}</span> <span style="color:var(--border-color)">○</span>`;
+                
+                div.onclick = () => submitVote(index);
+                container.appendChild(div);
+            });
+        }
+
+        function submitVote(selectedIndex) {
+            // Increment vote count
+            currentPoll.options[selectedIndex].votes += 1;
+            
+            // Switch to results view
+            renderResultsView();
+        }
+
+        // --- 3. Results Logic ---
+        
+        function renderResultsView() {
+            voteView.classList.remove('active');
+            resultsView.classList.add('active');
+            
+            document.getElementById('resultsQuestionTitle').innerText = currentPoll.question;
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            // Calculate total votes
+            let totalVotes = 0;
+            currentPoll.options.forEach(opt => totalVotes += opt.votes);
+
+            // Render bars
+            currentPoll.options.forEach(opt => {
+                let percentage = totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                resultItem.innerHTML = `
+                    <div class="result-header">
+                        <span>${opt.text}</span>
+                        <span>${percentage}% (${opt.votes} صوت)</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                `;
+                container.appendChild(resultItem);
+
+                // Animate progress bar slightly after render
+                setTimeout(() => {
+                    resultItem.querySelector('.progress-bar-fill').style.width = percentage + '%';
+                }, 100);
+            });
+        }
+
+        // Reset App for demo purposes
+        function resetApp() {
+            currentPoll = { question: '', options: [] };
+            document.getElementById('pollQuestion').value = '';
+            
+            // Reset options inputs to just 2
+            optionsContainer.innerHTML = `
+                <div class="option-input-wrapper"><input type="text" class="poll-option-input" placeholder="الخيار الأول"></div>
+                <div class="option-input-wrapper"><input type="text" class="poll-option-input" placeholder="الخيار الثاني"></div>
+            `;
+
+            resultsView.classList.remove('active');
+            createView.classList.add('active');
+        }
+    </script>
+</body>
+</html>
